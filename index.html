@@ -7,94 +7,219 @@
     <title>Project</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/handlebars@4.7.7/dist/handlebars.min.js"></script>
-<script src="/js/scenarioManager.js"></script>
-    
+    <script src="/js/scenarioManager.js"></script>
 </head>
 
 <body class="bg-gray-100 min-h-screen">
-    <!-- Navigation -->
-    <nav class="bg-white shadow-sm mb-8">
-        <div class="max-w-7xl mx-auto px-4">
-            <div class="flex space-x-8 h-16 items-center">
-                <a href="/" class="text-gray-900 hover:text-gray-500">Home</a>
-                <a href="/hiring" class="text-gray-900 hover:text-gray-500">Hiring</a>
-                <a href="/scenario/tech-stack" class="text-gray-900 hover:text-gray-500">Tech Stack</a>
-            </div>
+    <!-- Loading indicator -->
+    <div id="loading" class="hidden fixed inset-0 bg-black/50 flex items-center justify-center">
+        <div class="bg-white p-6 rounded-lg">
+            <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+            <div class="mt-4 text-white">Loading...</div>
         </div>
-    </nav>
+    </div>
 
-    <!-- Content area -->
-    <div id="content" class="max-w-4xl mx-auto px-4"></div>
+    <!-- Navigation placeholder -->
+    <div id="nav-container"></div>
+
+    <!-- Main content -->
+    <main class="max-w-4xl mx-auto px-4 py-8">
+        <div id="content"></div>
+    </main>
 
     <!-- Templates -->
+
+    <!-- Navigation template -->
+    <script id="nav-template" type="text/x-handlebars-template">
+        <nav class="bg-white shadow-sm mb-8">
+            <div class="max-w-7xl mx-auto px-4">
+                <div class="flex space-x-8 h-16 items-center">
+                    {{#each mainNav}}
+                        {{#if children}}
+                            <div class="relative group">
+                                <a href="{{path}}" 
+                                   class="text-gray-900 hover:text-gray-500 inline-flex items-center">
+                                    {{title}}
+                                    <svg class="ml-1 h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                                        <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                                    </svg>
+                                </a>
+                                <div class="absolute left-0 mt-2 w-48 bg-white rounded-md shadow-lg hidden group-hover:block z-50">
+                                    {{#each children}}
+                                        <a href="{{path}}" 
+                                           class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                            {{title}}
+                                        </a>
+                                    {{/each}}
+                                </div>
+                            </div>
+                        {{else}}
+                            <a href="{{path}}" 
+                               class="text-gray-900 hover:text-gray-500 {{#if @root.currentPath}}{{#eq path @root.currentPath}}text-blue-600{{/eq}}{{/if}}">
+                                {{title}}
+                            </a>
+                        {{/if}}
+                    {{/each}}
+                </div>
+            </div>
+        </nav>
+    </script>
+
+    <!-- Home template -->
     <script id="home-template" type="text/x-handlebars-template">
         <div class="bg-white rounded-lg shadow p-6">
             <h1 class="text-2xl font-bold mb-6">Welcome</h1>
             <div class="grid gap-4">
                 {{#each scenarios}}
-                <a href="/scenario/{{id}}" 
-                   class="p-4 bg-blue-50 rounded-lg hover:bg-blue-100">
-                    <h2 class="font-medium">{{title}}</h2>
-                    <p class="text-sm text-gray-600">{{description}}</p>
-                </a>
+                    <a href="/scenario/{{id}}" 
+                       class="p-4 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors">
+                        <h2 class="font-medium">{{title}}</h2>
+                        {{#if description}}
+                            <p class="text-sm text-gray-600 mt-1">{{description}}</p>
+                        {{/if}}
+                    </a>
                 {{/each}}
             </div>
         </div>
     </script>
 
+    <!-- Scenario template -->
+    <script id="scenario-template" type="text/x-handlebars-template">
+        <div class="bg-white rounded-lg shadow p-6">
+            <h1 class="text-2xl font-bold mb-4">{{title}}</h1>
+            
+            {{#if description}}
+                <p class="text-gray-600 mb-6">{{description}}</p>
+            {{/if}}
+
+            {{#if content}}
+                <div class="prose max-w-none">{{{content}}}</div>
+            {{/if}}
+
+            <div class="flex justify-between mt-6 pt-6 border-t">
+                <button onclick="window.history.back()" 
+                        class="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600">
+                    Back
+                </button>
+                {{#if nextScenario}}
+                    <a href="/scenario/{{nextScenario}}"
+                       class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
+                        Next
+                    </a>
+                {{/if}}
+            </div>
+        </div>
+    </script>
+
+    <!-- Main Script -->
     <script>
         // Initialize scenario manager
         const scenarioManager = new ScenarioManager();
 
+        // Handlebars helpers
+        Handlebars.registerHelper('eq', function (a, b) {
+            return a === b;
+        });
+
+        // Show/hide loading
+        function toggleLoading(show) {
+            document.getElementById('loading').style.display = show ? 'flex' : 'none';
+        }
+
+        // Load and render navigation
+        async function loadNavigation() {
+            try {
+                const response = await fetch('/data/navigation.json');
+                if (!response.ok) throw new Error('Failed to load navigation');
+                const data = await response.json();
+
+                // Add current path to data
+                data.currentPath = window.location.pathname;
+
+                const template = Handlebars.compile(
+                    document.getElementById('nav-template').innerHTML
+                );
+                document.getElementById('nav-container').innerHTML = template(data);
+            } catch (error) {
+                console.error('Error loading navigation:', error);
+            }
+        }
+
         // Handle routing
         async function handleRoute() {
+            toggleLoading(true);
             const path = window.location.pathname;
             const content = document.getElementById('content');
 
-            // Route matches
-            if (path === '/') {
-                // Home page - show scenarios list
-                const scenarios = await scenarioManager.fetchAllScenarios();
-                const template = Handlebars.compile(
-                    document.getElementById('home-template').innerHTML
-                );
-                content.innerHTML = template({ scenarios });
-            }
-            else if (path === '/hiring') {
-                // Load hiring page
-                const response = await fetch('/pages/hiring/index.html');
-                const html = await response.text();
-                content.innerHTML = html;
-            }
-            else if (path.startsWith('/scenario/')) {
-                // Load dynamic scenario
-                const scenarioId = path.split('/')[2];
-                const scenario = await scenarioManager.fetchScenario(scenarioId);
-                if (scenario) {
-                    content.innerHTML = `
-                        <div class="bg-white rounded-lg shadow p-6">
-                            <h1 class="text-2xl font-bold mb-4">${scenario.title}</h1>
-                            <div class="prose">${scenario.content}</div>
-                        </div>
-                    `;
+            try {
+                // Update navigation to highlight current page
+                await loadNavigation();
+
+                // Route matching
+                if (path === '/' || path === '') {
+                    // Home page - show scenarios list
+                    const scenarios = await scenarioManager.fetchAllScenarios();
+                    const template = Handlebars.compile(
+                        document.getElementById('home-template').innerHTML
+                    );
+                    content.innerHTML = template({ scenarios });
                 }
-            }
-            else {
-                content.innerHTML = '<div class="text-center">Page not found</div>';
+                else if (path.startsWith('/scenario/')) {
+                    // Load dynamic scenario
+                    const scenarioId = path.split('/')[2];
+                    const scenario = await scenarioManager.fetchScenario(scenarioId);
+                    if (scenario) {
+                        const template = Handlebars.compile(
+                            document.getElementById('scenario-template').innerHTML
+                        );
+                        content.innerHTML = template(scenario);
+                    } else {
+                        throw new Error('Scenario not found');
+                    }
+                }
+                else {
+                    // Try to load static page
+                    try {
+                        const pagePath = path === '/' ? '/pages/home.html' : `/pages${path}.html`;
+                        const response = await fetch(pagePath);
+                        if (!response.ok) throw new Error('Page not found');
+                        const html = await response.text();
+                        content.innerHTML = html;
+                    } catch (error) {
+                        content.innerHTML = `
+                            <div class="bg-white rounded-lg shadow p-6 text-center">
+                                <h1 class="text-2xl font-bold mb-4">Page Not Found</h1>
+                                <a href="/" class="text-blue-500">Back to Home</a>
+                            </div>
+                        `;
+                    }
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                content.innerHTML = `
+                    <div class="bg-white rounded-lg shadow p-6 text-center">
+                        <h1 class="text-2xl font-bold mb-4">Error</h1>
+                        <p class="text-red-500 mb-4">${error.message}</p>
+                        <a href="/" class="text-blue-500">Back to Home</a>
+                    </div>
+                `;
+            } finally {
+                toggleLoading(false);
             }
         }
 
         // Handle navigation
         window.addEventListener('popstate', handleRoute);
         window.addEventListener('load', handleRoute);
+
+        // Handle link clicks
         document.addEventListener('click', (e) => {
-            if (e.target.tagName === 'A') {
-                const href = e.target.getAttribute('href');
-                if (href.startsWith('/')) {
-                    e.preventDefault();
-                    history.pushState({}, '', href);
-                    handleRoute();
-                }
+            const link = e.target.closest('a');
+            if (link && link.href.startsWith(window.location.origin)) {
+                e.preventDefault();
+                const newPath = link.href.slice(window.location.origin.length);
+                history.pushState({}, '', newPath);
+                handleRoute();
             }
         });
     </script>

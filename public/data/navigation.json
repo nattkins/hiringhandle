@@ -1,0 +1,26 @@
+{
+    "mainNav": [
+        {
+            "title": "Home",
+            "path": "/"
+        },
+        {
+            "title": "Hiring",
+            "path": "/hiring",
+            "children": [
+                {
+                    "title": "Overview",
+                    "path": "/hiring"
+                },
+                {
+                    "title": "Constraints",
+                    "path": "/hiring/constraints"
+                }
+            ]
+        },
+        {
+            "title": "Analysis",
+            "path": "/analysis"
+        }
+    ]
+}

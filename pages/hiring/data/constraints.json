@@ -1,0 +1,34 @@
+{
+    "pageData": {
+        "title": "Hiring Constraints",
+        "description": "Define and analyze hiring constraints"
+    },
+    "formData": {
+        "roleTitle": "Senior Data Architect",
+        "skills": [
+            "Terraform",
+            "AWS",
+            "Python"
+        ],
+        "activeConstraints": [
+            {
+                "id": "security",
+                "label": "Security Clearance",
+                "severity": "high",
+                "details": "Secret level clearance needed"
+            }
+        ],
+        "availableConstraints": [
+            {
+                "id": "education",
+                "label": "Education Required",
+                "severity": "medium"
+            },
+            {
+                "id": "location",
+                "label": "Location Restricted",
+                "severity": "high"
+            }
+        ]
+    }
+}
