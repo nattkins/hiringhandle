@@ -1,0 +1,151 @@
+<div class="bg-white rounded-lg shadow p-6">
+    <h1 class="text-2xl font-bold mb-6">Role Constraints Analysis</h1>
+
+    <!-- Templates -->
+    <script id="constraints-template" type="text/x-handlebars-template">
+        <div class="space-y-6">
+            <!-- Basic Information -->
+            <div>
+                <label class="block text-sm font-medium mb-2">Role Title</label>
+                <input type="text" value="{{formData.roleTitle}}" readonly
+                       class="w-full p-2 border rounded-md bg-gray-50">
+                
+                <div class="mt-4">
+                    <label class="block text-sm font-medium mb-2">Required Skills</label>
+                    <div class="space-y-2">
+                        {{#each formData.skills}}
+                        <div class="flex items-center bg-blue-50 p-2 rounded">
+                            <span class="w-6 text-sm text-gray-500">{{add @index 1}}.</span>
+                            <span>{{this}}</span>
+                        </div>
+                        {{/each}}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Current Constraints -->
+            <div class="border-t pt-6">
+                <div class="flex items-center space-x-2 mb-4">
+                    <svg class="h-5 w-5 text-orange-500" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+                    </svg>
+                    <h3 class="font-medium">Current Constraints</h3>
+                </div>
+
+                <div class="space-y-3">
+                    {{#each formData.constraints}}
+                    <div class="bg-orange-50 rounded-lg border border-orange-200 p-3">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <span class="text-orange-700">{{label}}</span>
+                                {{#if severity}}
+                                <span class="ml-2 text-xs bg-orange-200 text-orange-800 px-2 py-0.5 rounded-full">
+                                    {{severity}}
+                                </span>
+                                {{/if}}
+                            </div>
+                            {{#if details}}
+                            <span class="text-xs bg-orange-200 text-orange-800 px-2 py-0.5 rounded-full">
+                                Details Added
+                            </span>
+                            {{/if}}
+                        </div>
+                        {{#if details}}
+                        <div class="mt-2 text-sm text-gray-600">{{details}}</div>
+                        {{/if}}
+                    </div>
+                    {{/each}}
+                </div>
+            </div>
+
+            <!-- Available Constraints -->
+            <div class="border-t pt-6">
+                <div class="text-sm text-gray-500 mb-2">Available constraints to add:</div>
+                <div class="flex flex-wrap gap-2">
+                    {{#each availableConstraints}}
+                    <button onclick="handleAddConstraint('{{id}}')"
+                            class="inline-flex items-center px-3 py-1 rounded-full text-sm
+                                   cursor-pointer transition-colors {{#if severity}}
+                                   {{#eq severity 'high'}}
+                                   bg-gray-100 hover:bg-red-50 text-gray-700 hover:text-red-700
+                                   {{else}}
+                                   bg-gray-100 hover:bg-orange-50 text-gray-700 hover:text-orange-700
+                                   {{/eq}}
+                                   {{/if}}">
+                        {{label}}
+                    </button>
+                    {{/each}}
+                </div>
+            </div>
+
+            <!-- Market Impact Preview -->
+            {{#if analysis}}
+            <div class="border-t pt-6">
+                <h3 class="font-medium mb-4">Market Impact</h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="bg-blue-50 p-4 rounded-lg">
+                        <div class="text-sm text-gray-600">Initial Pool</div>
+                        <div class="text-2xl font-bold">{{analysis.marketSize}}</div>
+                    </div>
+                    {{#each analysis.reductionFactors}}
+                    <div class="bg-orange-50 p-4 rounded-lg">
+                        <div class="text-sm text-gray-600">After {{factor}}</div>
+                        <div class="text-2xl font-bold">{{remaining}}</div>
+                        <div class="text-sm text-orange-600">-{{reduction}}</div>
+                    </div>
+                    {{/each}}
+                </div>
+            </div>
+            {{/if}}
+
+            <!-- Navigation -->
+            <div class="flex justify-between pt-4 border-t">
+                <button onclick="window.location.href='/'" 
+                        class="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600">
+                    Back
+                </button>
+                {{#if nextScenario}}
+                <button onclick="window.location.href='/scenario/{{nextScenario}}'"
+                        class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
+                    View Market Impact
+                </button>
+                {{/if}}
+            </div>
+        </div>
+    </script>
+</div>
+
+<script>
+    // Helper for 1-based indexing
+    Handlebars.registerHelper('add', function (value, addition) {
+        return value + addition;
+    });
+
+    // Helper for equality comparison
+    Handlebars.registerHelper('eq', function (a, b) {
+        return a === b;
+    });
+
+    // Load and render the constraints
+    async function loadConstraints() {
+        const scenarioManager = new ScenarioManager();
+        const scenario = await scenarioManager.fetchScenario('role-constraints');
+
+        if (scenario) {
+            const template = Handlebars.compile(
+                document.getElementById('constraints-template').innerHTML
+            );
+            document.querySelector('.bg-white').innerHTML = template(scenario);
+        }
+    }
+
+    // Handle adding a constraint
+    function handleAddConstraint(constraintId) {
+        // In a real app, this would update the data
+        // For now, just show an alert
+        alert(`Would add constraint: ${constraintId}`);
+    }
+
+    // Load constraints when page loads
+    loadConstraints();
+</script>

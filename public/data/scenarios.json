@@ -1,0 +1,112 @@
+{
+        "list": [
+            {
+                "id": "clear-requirements",
+                "title": "Clear Requirements Analysis",
+                "description": "Starting point with well-defined requirements",
+                "content": "<div class='space-y-4'><h2 class='text-xl font-semibold'>Role Requirements</h2><ul class='list-disc pl-5'><li>Senior Data Architect</li><li>5+ years experience</li><li>Cloud platforms (AWS/GCP)</li><li>Strong SQL skills</li></ul><p class='text-gray-600 mt-4'>Analysis indicates these requirements are clear and market-standard.</p></div>",
+                "nextScenario": "tech-stack"
+            },
+            {
+                "id": "tech-stack",
+                "title": "Technical Stack Review",
+                "description": "Analyzing technology requirements and alternatives",
+                "content": "<div class='space-y-4'><h2 class='text-xl font-semibold'>Core Technologies</h2><div class='bg-blue-50 p-4 rounded-lg'><h3 class='font-medium'>Primary Stack</h3><ul class='mt-2'><li>✓ Terraform</li><li>✓ dbt</li><li>✓ Python</li></ul></div><div class='bg-green-50 p-4 rounded-lg mt-4'><h3 class='font-medium'>Alternative Considerations</h3><ul class='mt-2'><li>• Pulumi as Terraform alternative</li><li>• Dagster as dbt alternative</li></ul></div></div>",
+                "nextScenario": "market-analysis"
+            },
+            {
+                "id": "market-analysis",
+                "title": "Market Analysis",
+                "description": "Understanding market conditions and candidate availability",
+                "content": "<div class='space-y-4'><h2 class='text-xl font-semibold'>Market Insights</h2><div class='grid grid-cols-2 gap-4'><div class='bg-blue-50 p-4 rounded-lg'><h3 class='font-medium'>Salary Range</h3><p class='text-2xl font-bold mt-2'>$140-160k</p></div><div class='bg-green-50 p-4 rounded-lg'><h3 class='font-medium'>Available Pool</h3><p class='text-2xl font-bold mt-2'>250+</p></div></div><div class='mt-4 bg-yellow-50 p-4 rounded-lg'><h3 class='font-medium'>Key Findings</h3><ul class='mt-2 space-y-2'><li>• High demand for Terraform skills</li><li>• Remote work increases candidate pool</li><li>• Competition from fintech sector</li></ul></div></div>",
+                "nextScenario": "final-review"
+            },
+            {
+                "id": "final-review",
+                "title": "Final Review",
+                "description": "Review and finalize hiring strategy",
+                "content": "<div class='space-y-4'><h2 class='text-xl font-semibold'>Strategy Summary</h2><div class='bg-green-50 p-4 rounded-lg'><h3 class='font-medium'>Recommended Approach</h3><ol class='list-decimal pl-5 mt-2 space-y-2'><li>Focus on mid-senior candidates with strong infrastructure background</li><li>Offer competitive remote work options</li><li>Include learning budget for certifications</li><li>Consider contractors for immediate start</li></ol></div><div class='bg-blue-50 p-4 rounded-lg mt-4'><h3 class='font-medium'>Next Steps</h3><ul class='mt-2 space-y-2'><li>• Post job description</li><li>• Set up screening process</li><li>• Prepare interview questions</li></ul></div></div>"
+            }],
+        "scenarios": [
+        {
+            "id": "role-constraints",
+            "title": "Role Constraints Analysis",
+            "description": "Analyze hiring constraints and requirements",
+            "formData": {
+                "roleTitle": "Senior Data Architect",
+                "description": "Leading data platform architecture and governance",
+                "skills": [
+                    "Terraform",
+                    "AWS",
+                    "Python"
+                ],
+                "constraints": [
+                    {
+                        "id": "security",
+                        "label": "Security Clearance Required",
+                        "severity": "high",
+                        "details": "Secret level clearance needed"
+                    },
+                    {
+                        "id": "experience",
+                        "label": "Minimum Experience",
+                        "severity": "medium",
+                        "details": "5+ years in data architecture"
+                    }
+                ]
+            },
+            "availableConstraints": [
+                {
+                    "id": "education",
+                    "label": "Specific Degree Required",
+                    "severity": "medium",
+                    "detailPrompt": "What specific educational requirements?"
+                },
+                {
+                    "id": "location",
+                    "label": "Location Restricted",
+                    "severity": "high",
+                    "detailPrompt": "What are the location requirements?"
+                },
+                {
+                    "id": "timezone",
+                    "label": "Timezone Requirements",
+                    "severity": "medium",
+                    "detailPrompt": "What timezone constraints apply?"
+                },
+                {
+                    "id": "clearance",
+                    "label": "Security Clearance",
+                    "severity": "high",
+                    "detailPrompt": "What level of clearance is needed?"
+                }
+            ],
+            "nextScenario": "market-impact"
+        },
+        {
+            "id": "market-impact",
+            "title": "Market Impact Analysis",
+            "description": "Understanding how constraints affect the candidate pool",
+            "analysis": {
+                "marketSize": 1200,
+                "reductionFactors": [
+                    {
+                        "factor": "Security Clearance",
+                        "reduction": "65%",
+                        "remaining": 420
+                    },
+                    {
+                        "factor": "Experience Level",
+                        "reduction": "40%",
+                        "remaining": 252
+                    }
+                ],
+                "salary": {
+                    "base": "£120,000",
+                    "withConstraints": "£145,000",
+                    "increase": "20.8%"
+                }
+            }
+        }
+    ]
+}

@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Project</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/handlebars@4.7.7/dist/handlebars.min.js"></script>
+<script src="/js/scenarioManager.js"></script>
+    
+</head>
+
+<body class="bg-gray-100 min-h-screen">
+    <!-- Navigation -->
+    <nav class="bg-white shadow-sm mb-8">
+        <div class="max-w-7xl mx-auto px-4">
+            <div class="flex space-x-8 h-16 items-center">
+                <a href="/" class="text-gray-900 hover:text-gray-500">Home</a>
+                <a href="/hiring" class="text-gray-900 hover:text-gray-500">Hiring</a>
+                <a href="/scenario/tech-stack" class="text-gray-900 hover:text-gray-500">Tech Stack</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Content area -->
+    <div id="content" class="max-w-4xl mx-auto px-4"></div>
+
+    <!-- Templates -->
+    <script id="home-template" type="text/x-handlebars-template">
+        <div class="bg-white rounded-lg shadow p-6">
+            <h1 class="text-2xl font-bold mb-6">Welcome</h1>
+            <div class="grid gap-4">
+                {{#each scenarios}}
+                <a href="/scenario/{{id}}" 
+                   class="p-4 bg-blue-50 rounded-lg hover:bg-blue-100">
+                    <h2 class="font-medium">{{title}}</h2>
+                    <p class="text-sm text-gray-600">{{description}}</p>
+                </a>
+                {{/each}}
+            </div>
+        </div>
+    </script>
+
+    <script>
+        // Initialize scenario manager
+        const scenarioManager = new ScenarioManager();
+
+        // Handle routing
+        async function handleRoute() {
+            const path = window.location.pathname;
+            const content = document.getElementById('content');
+
+            // Route matches
+            if (path === '/') {
+                // Home page - show scenarios list
+                const scenarios = await scenarioManager.fetchAllScenarios();
+                const template = Handlebars.compile(
+                    document.getElementById('home-template').innerHTML
+                );
+                content.innerHTML = template({ scenarios });
+            }
+            else if (path === '/hiring') {
+                // Load hiring page
+                const response = await fetch('/pages/hiring/index.html');
+                const html = await response.text();
+                content.innerHTML = html;
+            }
+            else if (path.startsWith('/scenario/')) {
+                // Load dynamic scenario
+                const scenarioId = path.split('/')[2];
+                const scenario = await scenarioManager.fetchScenario(scenarioId);
+                if (scenario) {
+                    content.innerHTML = `
+                        <div class="bg-white rounded-lg shadow p-6">
+                            <h1 class="text-2xl font-bold mb-4">${scenario.title}</h1>
+                            <div class="prose">${scenario.content}</div>
+                        </div>
+                    `;
+                }
+            }
+            else {
+                content.innerHTML = '<div class="text-center">Page not found</div>';
+            }
+        }
+
+        // Handle navigation
+        window.addEventListener('popstate', handleRoute);
+        window.addEventListener('load', handleRoute);
+        document.addEventListener('click', (e) => {
+            if (e.target.tagName === 'A') {
+                const href = e.target.getAttribute('href');
+                if (href.startsWith('/')) {
+                    e.preventDefault();
+                    history.pushState({}, '', href);
+                    handleRoute();
+                }
+            }
+        });
+    </script>
+</body>
+
+</html>

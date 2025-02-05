@@ -1,0 +1,12 @@
+{
+    "routes": [
+        {
+            "src": "/api/scenarios",
+            "dest": "/api/scenarios.js"
+        },
+        {
+            "src": "/(.*)",
+            "dest": "/index.html"
+        }
+    ]
+}
